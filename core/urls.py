@@ -22,12 +22,6 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
 
-    # ROTAS DE API EM GERAL
-    # LOGIN JWT
-    # path('api/auth/login/', LoginEmailView.as_view(), name='login_email'),
-    # path('api/auth/login/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-
     # ROTAS API DOS EXERCICIOS
-    # path('api/training/', include('training.urls')),  # Aqui expõe o endpoint/
     path("api/", include("training.urls")),
 ]
