@@ -160,3 +160,6 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5500",
 ]
 
+ACCESS_TOKEN_LIFETIME = 10
+
+
