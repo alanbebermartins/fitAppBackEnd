@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.contrib.auth import authenticate
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
 from rest_framework.views import APIView
@@ -9,6 +9,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User
 from .models import Training
 from .serializers import TrainingSerializer
+from rest_framework_simplejwt.exceptions import TokenError
+from .authentication import CookieJWTAuthentication
 
 # ==========================
 # REGISTRA TREINO (PROTEGIDO)
@@ -28,6 +30,7 @@ class RegistrarTreinoView(APIView):
 # LOGIN COM EMAIL + SENHA
 # ==========================
 class LoginEmailView(APIView):
+    authentication_classes = []
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -72,7 +75,8 @@ class LoginEmailView(APIView):
             value=access_token,
             httponly=True,
             secure=False,   # True só quando estiver em HTTPS
-            samesite="Lax"
+            samesite="Lax",
+            path="/"
         )
 
         response.set_cookie(
@@ -85,6 +89,49 @@ class LoginEmailView(APIView):
 
         return response
 
+# ==========================
+# REFRESH
+# ==========================
+
+class RefreshTokenView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+
+        refresh_token = request.COOKIES.get("refresh_token")
+
+        if not refresh_token:
+            return Response(
+                {"error": "Refresh token não encontrado"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        try:
+            refresh = RefreshToken(refresh_token)
+            access_token = str(refresh.access_token)
+
+            response = Response(
+                {"message": "Token renovado"},
+                status=status.HTTP_200_OK
+            )
+
+            response.set_cookie(
+                key="access_token",
+                value=access_token,
+                httponly=True,
+                secure=False,
+                samesite="Lax",
+                path="/"
+            )
+
+            return response
+
+        except TokenError:
+            return Response(
+                {"error": "Refresh token inválido"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
 
 # ==========================
 # LOGOUT (REMOVE COOKIES)
@@ -171,3 +218,13 @@ class RegisterUserView(APIView):
             status=status.HTTP_201_CREATED
         )
 
+@api_view(["GET"])
+@authentication_classes([CookieJWTAuthentication])
+@permission_classes([IsAuthenticated])
+def auth_check(request):
+
+    return Response({
+        "authenticated": True,
+        "user_id": request.user.id,
+        "email": request.user.email
+    })
