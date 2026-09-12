@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Training
+from .models import Training, Exercise
 
 # Criar a rota da API para salvar os dados
 
@@ -12,3 +12,15 @@ class TrainingSerializer(serializers.ModelSerializer):
         read_only_fields = (
             'volume_total_weight',
         )
+
+
+class ExerciseListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Exercise
+        fields = ('uuid_exercise_id', 'muscle_group', 'exercise_name')
+
+
+class MuscleGroupListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Exercise
+        fields = ('muscle_group',)

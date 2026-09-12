@@ -220,7 +220,7 @@ def seed_exercises(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("training", "0001_initial"),
+        ("training", "0006_exercise"),
     ]
 
     operations = [

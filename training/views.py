@@ -7,8 +7,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User
-from .models import Training
-from .serializers import TrainingSerializer
+from .models import Training, Exercise
+from .serializers import TrainingSerializer, ExerciseListSerializer
 from rest_framework_simplejwt.exceptions import TokenError
 from .authentication import CookieJWTAuthentication
 
@@ -217,6 +217,29 @@ class RegisterUserView(APIView):
             {"message": "Usuário cadastrado com sucesso"},
             status=status.HTTP_201_CREATED
         )
+
+@api_view(["GET"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def get_list_all_exercises(request):
+    exercises = Exercise.objects.all()
+    serializer = ExerciseListSerializer(exercises, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def get_list_all_muscle_groups(request):
+    # Busca todas as categorias distintas da coluna muscle_group,
+    # entrega uma lista plana e única, sem duplicidade.
+    groups = sorted({
+        group for group in Exercise.objects.values_list("muscle_group", flat=True) if group
+    })
+
+    payload = [{"muscle_group": group} for group in groups]
+    return Response(payload, status=status.HTTP_200_OK)
+
 
 @api_view(["GET"])
 @authentication_classes([CookieJWTAuthentication])

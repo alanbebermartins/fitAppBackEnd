@@ -1,5 +1,15 @@
 from django.urls import path
-from .views import RegistrarTreinoView, LoginEmailView, LogoutView, MeView, RegisterUserView, RefreshTokenView, auth_check
+from .views import (
+    RegistrarTreinoView,
+    LoginEmailView,
+    LogoutView,
+    MeView,
+    RegisterUserView,
+    RefreshTokenView,
+    auth_check,
+    get_list_all_exercises,
+    get_list_all_muscle_groups,
+)
 from .authentication import CookieJWTAuthentication
 
 urlpatterns = [
@@ -15,4 +25,10 @@ urlpatterns = [
 
     # ROTA DE REGISTRAR EXERCICIO
     path('training/register/', RegistrarTreinoView.as_view(), name='registrar-treino'),
+
+    # ROTA DE BUSCAR TODOS OS EXERCICIOS
+    path('get_list_all_exercises/', get_list_all_exercises, name='listar-tipos-exercicios'),
+
+    # ROTA DE BUSCAR TODOS OS GRUPOS MUSCULARES
+    path('get_list_all_muscle_groups/', get_list_all_muscle_groups, name='listar-grupos-musculares'),
 ]
