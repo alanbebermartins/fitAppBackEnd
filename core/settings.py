@@ -82,6 +82,16 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+# No settings.py:
+
+# Verifica se o arquivo existe no diretório de Secrets do Render (/etc/secrets/ca.pem)
+# Se não existir, busca localmente no projeto (BASE_DIR / 'ca.pem')
+SSL_CA_PATH = (
+    '/etc/secrets/ca.pem'
+    if os.path.exists('/etc/secrets/ca.pem')
+    else os.path.join(BASE_DIR, os.getenv('DB_SSL_CA', 'ca.pem'))
+)
+
 DATABASES = {
     'default': {
         'ENGINE': os.getenv('DB_ENGINE'),
@@ -92,12 +102,11 @@ DATABASES = {
         'PORT': os.getenv('DB_PORT'),
         'OPTIONS': {
             'ssl': {
-                'ca': '/etc/secrets/ca.pem' if os.path.exists('/etc/secrets/ca.pem') else os.path.join(BASE_DIR, os.getenv('DB_SSL_CA', 'ca.pem'))
+                'ca': SSL_CA_PATH
             }
         },
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
