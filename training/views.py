@@ -1,3 +1,4 @@
+import uuid
 from django.shortcuts import render
 from django.contrib.auth import authenticate
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
@@ -238,6 +239,51 @@ def get_list_all_muscle_groups(request):
     })
 
     payload = [{"muscle_group": group} for group in groups]
+    return Response(payload, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def get_list_all_realized_exercises(request, exercise_id=None):
+    """
+    Retorna os 12 registros mais recentes de treino para um exercise_id informado
+    pelo caminho da própria URL, sem depender de query string.
+
+    Aceita UUID com hífens e sem hífens.
+    """
+    if not exercise_id:
+        return Response(
+            {"error": "O parâmetro exercise_id é obrigatório no path da URL."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    raw_id = str(exercise_id).strip().replace("/", "")
+
+    # Normaliza UUID sem hífens para o formato canônico com hífens.
+    # Exemplo: 6257567d5aab42c9bd034f1697dd1aa1 -> 6257567d-5aab-42c9-bd03-4f1697dd1aa1
+    if len(raw_id) == 32 and all(ch in "0123456789abcdefABCDEF" for ch in raw_id):
+        raw_id = f"{raw_id[0:8]}-{raw_id[8:12]}-{raw_id[12:16]}-{raw_id[16:20]}-{raw_id[20:32]}"
+
+    try:
+        parsed_uuid = uuid.UUID(raw_id)
+    except (TypeError, ValueError):
+        return Response(
+            {"error": "O parâmetro exercise_id deve ser um UUID válido."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    records = Training.objects.filter(exercise_id=parsed_uuid).order_by("-training_date", "-id")[:12]
+
+    payload = [
+        {
+            "exercise_id": str(record.exercise_id),
+            "weight_kg": record.weight_kg,
+            "training_date": record.training_date.isoformat(),
+        }
+        for record in records
+    ]
+
     return Response(payload, status=status.HTTP_200_OK)
 
 

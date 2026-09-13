@@ -9,6 +9,7 @@ from .views import (
     auth_check,
     get_list_all_exercises,
     get_list_all_muscle_groups,
+    get_list_all_realized_exercises,
 )
 from .authentication import CookieJWTAuthentication
 
@@ -31,4 +32,7 @@ urlpatterns = [
 
     # ROTA DE BUSCAR TODOS OS GRUPOS MUSCULARES
     path('get_list_all_muscle_groups/', get_list_all_muscle_groups, name='listar-grupos-musculares'),
+
+    # ROTA DE BUSCAR TODOS EXERCÍCIOS REALIZADOS
+    path('get_list_all_realized_exercises/<str:exercise_id>/', get_list_all_realized_exercises, name='listar-exercicios-realizados-uuid'),
 ]
