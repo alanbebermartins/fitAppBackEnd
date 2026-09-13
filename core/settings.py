@@ -92,10 +92,7 @@ DATABASES = {
         'PORT': os.getenv('DB_PORT'),
         'OPTIONS': {
             'ssl': {
-                'ca': os.path.join(
-                    BASE_DIR,
-                    os.getenv('DB_SSL_CA')
-                )
+                'ca': '/etc/secrets/ca.pem' if os.path.exists('/etc/secrets/ca.pem') else os.path.join(BASE_DIR, os.getenv('DB_SSL_CA', 'ca.pem'))
             }
         },
     }
