@@ -84,13 +84,19 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 # No settings.py:
 
-# Verifica se o arquivo existe no diretório de Secrets do Render (/etc/secrets/ca.pem)
-# Se não existir, busca localmente no projeto (BASE_DIR / 'ca.pem')
-SSL_CA_PATH = (
-    '/etc/secrets/ca.pem'
-    if os.path.exists('/etc/secrets/ca.pem')
-    else os.path.join(BASE_DIR, os.getenv('DB_SSL_CA', 'ca.pem'))
-)
+# Função para encontrar o caminho real do arquivo ca.pem no servidor Render ou localmente
+def get_ssl_ca_path():
+    possible_paths = [
+        '/etc/secrets/ca.pem',                                # Caminho nativo de Secret Files do Render
+        os.path.join(BASE_DIR, 'ca.pem'),                     # Raiz do projeto
+        os.path.join(BASE_DIR.parent, 'ca.pem'),              # Pasta pai da raiz
+        os.getenv('DB_SSL_CA', 'ca.pem'),                     # O valor vindo da variável
+    ]
+    for path in possible_paths:
+        if path and os.path.exists(path):
+            return path
+    # Se não achar em nenhum lugar acima, retorna o caminho do Secret File do Render por padrão
+    return '/etc/secrets/ca.pem'
 
 DATABASES = {
     'default': {
@@ -102,7 +108,7 @@ DATABASES = {
         'PORT': os.getenv('DB_PORT'),
         'OPTIONS': {
             'ssl': {
-                'ca': SSL_CA_PATH
+                'ca': get_ssl_ca_path()
             }
         },
     }
