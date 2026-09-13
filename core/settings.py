@@ -183,11 +183,13 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5500",
     "http://localhost:5500",
+    "https://progress-fit-app.vercel.app",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:5500",
     "http://localhost:5500",
+    "https://progress-fit-app.vercel.app",
 ]
 
 ACCESS_TOKEN_LIFETIME = 10
