@@ -8,3 +8,7 @@ __pycache__/
 *.pyo
 *.pyd
 *.pyc
+
+# Certificates pem
+certificates/
+certificates/*
