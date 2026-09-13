@@ -84,6 +84,14 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 # No settings.py:
 
+# --- TESTE DE DIAGNÓSTICO DO RENDER ---
+print("--- VERIFICANDO ARQUIVOS DE SSL NO RENDER ---")
+print("Secret File existe em /etc/secrets/ca.pem?", os.path.exists('/etc/secrets/ca.pem'))
+if os.path.exists('/etc/secrets'):
+    print("Conteudo da pasta /etc/secrets/:", os.listdir('/etc/secrets'))
+print("Conteudo da pasta BASE_DIR:", os.listdir(BASE_DIR))
+print("---------------------------------------------")
+
 # Função para encontrar o caminho real do arquivo ca.pem no servidor Render ou localmente
 def get_ssl_ca_path():
     possible_paths = [
