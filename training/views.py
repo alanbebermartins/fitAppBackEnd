@@ -1,6 +1,8 @@
+import os
 import uuid
 from django.shortcuts import render
 from django.contrib.auth import authenticate
+from django.conf import settings
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
@@ -12,6 +14,24 @@ from .models import Training, Exercise
 from .serializers import TrainingSerializer, ExerciseListSerializer
 from rest_framework_simplejwt.exceptions import TokenError
 from .authentication import CookieJWTAuthentication
+
+
+def cookie_options():
+    """Empacota o contrato de cookie do JWT para deploy local vs produção.
+    Em produção, o frontend fica em Vercel e o backend em Render, logo o browser
+    exige Secure=True e SameSite=None para poder mandar o cookie cross-site.
+    """
+    secure = os.getenv('COOKIE_SECURE', 'True' if not settings.DEBUG else 'False').lower() in (
+        '1', 'true', 'yes', 'on'
+    )
+    samesite = os.getenv('COOKIE_SAMESITE', 'None' if secure else 'Lax')
+
+    return {
+        'httponly': True,
+        'secure': secure,
+        'samesite': samesite,
+        'path': '/',
+    }
 
 # ==========================
 # REGISTRA TREINO (PROTEGIDO)
@@ -71,21 +91,17 @@ class LoginEmailView(APIView):
         )
 
         # Cookies HttpOnly (SEGURANÇA)
+        options = cookie_options()
         response.set_cookie(
             key="access_token",
             value=access_token,
-            httponly=True,
-            secure=False,   # True só quando estiver em HTTPS
-            samesite="Lax",
-            path="/"
+            **options
         )
 
         response.set_cookie(
             key="refresh_token",
             value=refresh_token,
-            httponly=True,
-            secure=False,
-            samesite="Lax"
+            **options
         )
 
         return response
@@ -120,10 +136,7 @@ class RefreshTokenView(APIView):
             response.set_cookie(
                 key="access_token",
                 value=access_token,
-                httponly=True,
-                secure=False,
-                samesite="Lax",
-                path="/"
+                **cookie_options()
             )
 
             return response
@@ -146,8 +159,8 @@ class LogoutView(APIView):
             status=status.HTTP_200_OK
         )
 
-        response.delete_cookie("access_token")
-        response.delete_cookie("refresh_token")
+        response.delete_cookie("access_token", path='/')
+        response.delete_cookie("refresh_token", path='/')
 
         return response
 
